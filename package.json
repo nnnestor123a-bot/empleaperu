@@ -1,0 +1,51 @@
+{
+  "name": "empleaperu",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EmpleaPerú — Plataforma peruana de empleo, reclutamiento, ATS y crecimiento profesional",
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1 -p 3000",
+    "build": "next build",
+    "start": "next start -H 127.0.0.1 -p 3000",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "tsx --env-file=.env prisma/seed.ts",
+    "setup": "npm install && npx prisma generate && npx prisma db push && npm run db:seed",
+    "backup": "node scripts/backup.mjs",
+    "restore": "node scripts/restore.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "6.6.0",
+    "bcryptjs": "3.0.2",
+    "clsx": "2.1.1",
+    "jose": "6.0.10",
+    "jspdf": "3.0.1",
+    "lucide-react": "0.487.0",
+    "mammoth": "1.9.0",
+    "next": "15.3.2",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "recharts": "2.15.2",
+    "tailwind-merge": "3.2.0",
+    "zod": "3.24.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "2.4.6",
+    "@types/node": "22.14.0",
+    "@types/react": "19.1.0",
+    "@types/react-dom": "19.1.0",
+    "autoprefixer": "10.4.21",
+    "eslint": "9.24.0",
+    "eslint-config-next": "15.3.2",
+    "postcss": "8.5.3",
+    "prisma": "6.6.0",
+    "tailwindcss": "3.4.17",
+    "tsx": "4.19.3",
+    "typescript": "5.8.3",
+    "vitest": "3.1.1"
+  }
+}
