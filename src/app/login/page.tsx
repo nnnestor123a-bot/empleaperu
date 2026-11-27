@@ -100,30 +100,29 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Local demo credentials helper */}
-        <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 dark:border-slate-800 dark:bg-slate-800/70">
-          <p className="flex items-center gap-1.5 text-xs font-bold text-[#12336B] dark:text-blue-200">
-            <KeyRound className="h-3.5 w-3.5" /> Cuentas ficticias de demostración local
-          </p>
-          <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-300">
-            Contraseña demo para los 3 roles: <code className="font-bold">Emplea2026!</code>
-          </p>
-          <div className="mt-2.5 flex flex-wrap gap-1.5">
-            {DEMO_ACCOUNTS.map((acc) => (
-              <button
-                key={acc.email}
-                type="button"
-                onClick={() => {
-                  setEmail(acc.email);
-                  setPassword("Emplea2026!");
-                }}
-                className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-[#12336B] shadow-sm hover:bg-[#2563EB] hover:text-white dark:bg-slate-900 dark:text-slate-200"
-              >
-                Usar {acc.label}
-              </button>
-            ))}
+        {/* Local dev demo helper — disabled in production */}
+        {process.env.NEXT_PUBLIC_SHOW_DEMO_HELPER === "true" && (
+          <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 dark:border-slate-800 dark:bg-slate-800/70">
+            <p className="flex items-center gap-1.5 text-xs font-bold text-[#12336B] dark:text-blue-200">
+              <KeyRound className="h-3.5 w-3.5" /> Acceso rápido (entorno local)
+            </p>
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              {DEMO_ACCOUNTS.map((acc) => (
+                <button
+                  key={acc.email}
+                  type="button"
+                  onClick={() => {
+                    setEmail(acc.email);
+                    setPassword("Emplea2026!");
+                  }}
+                  className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-[#12336B] shadow-sm hover:bg-[#2563EB] hover:text-white dark:bg-slate-900 dark:text-slate-200"
+                >
+                  Usar {acc.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

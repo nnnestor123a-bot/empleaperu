@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { deletePrivateResumeFile, readPrivateResumeFile } from "@/lib/storage";
 import { logAudit } from "@/lib/audit";
 
-function getPrivateStorageDir(): string {
-  return path.resolve(process.cwd(), process.env.STORAGE_DIR || "./storage/private", "resumes");
-}
-
 /**
- * Descarga segura de CV privado fuera de /public.
+ * Descarga segura de CV privado (Supabase Storage en producción / disco privado en local).
  * Solo permite:
  * - El candidato propietario del CV
  * - Una empresa a la que ese candidato haya postulado (aislamiento estricto anti-IDOR)
@@ -58,10 +53,9 @@ export async function GET(
     return NextResponse.json({ error: "Acceso denegado a este CV privado." }, { status: 403 });
   }
 
-  const filePath = path.join(getPrivateStorageDir(), path.basename(resume.storedName));
   try {
-    const fileBuf = await fs.readFile(filePath);
-    return new NextResponse(fileBuf, {
+    const fileBuf = await readPrivateResumeFile(resume.storedName);
+    return new NextResponse(new Uint8Array(fileBuf), {
       status: 200,
       headers: {
         "Content-Type": resume.mimeType,
@@ -71,7 +65,7 @@ export async function GET(
       },
     });
   } catch {
-    return NextResponse.json({ error: "Archivo no disponible en almacenamiento local." }, { status: 404 });
+    return NextResponse.json({ error: "Archivo no disponible en almacenamiento seguro." }, { status: 404 });
   }
 }
 
@@ -93,8 +87,7 @@ export async function DELETE(
   }
 
   await prisma.resume.delete({ where: { id } });
-  const filePath = path.join(getPrivateStorageDir(), path.basename(resume.storedName));
-  await fs.unlink(filePath).catch(() => {});
+  await deletePrivateResumeFile(resume.storedName);
 
   return NextResponse.json({ ok: true });
 }

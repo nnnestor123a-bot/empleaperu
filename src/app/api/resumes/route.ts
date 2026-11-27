@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
 import { analyzeCvText, extractResumeText } from "@/lib/cv-analyzer";
+import { savePrivateResumeFile } from "@/lib/storage";
 import { logAudit } from "@/lib/audit";
 
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_EXTS = [".pdf", ".docx"];
-
-function getPrivateStorageDir(): string {
-  return path.resolve(process.cwd(), process.env.STORAGE_DIR || "./storage/private", "resumes");
-}
 
 function validateMagicBytes(buffer: Buffer, ext: string): boolean {
   if (ext === ".pdf") {
@@ -99,10 +95,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const dir = getPrivateStorageDir();
-  await fs.mkdir(dir, { recursive: true });
+  const mimeType =
+    ext === ".pdf"
+      ? "application/pdf"
+      : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
   const storedName = `${crypto.randomUUID()}${ext}`;
-  await fs.writeFile(path.join(dir, storedName), buffer);
+  await savePrivateResumeFile(storedName, buffer, mimeType);
 
   const extracted = await extractResumeText(buffer, file.type, file.name);
   const analysis = analyzeCvText(extracted.text, extracted.readable, extracted.warning);
@@ -117,10 +115,7 @@ export async function POST(req: NextRequest) {
       candidateId: auth.user.candidateProfileId,
       originalName: file.name.slice(0, 160),
       storedName,
-      mimeType:
-        ext === ".pdf"
-          ? "application/pdf"
-          : "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      mimeType,
       sizeBytes: file.size,
       extractedText: extracted.text.slice(0, 15000),
       analysisJson: JSON.stringify(analysis),

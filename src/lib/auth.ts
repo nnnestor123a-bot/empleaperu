@@ -8,7 +8,14 @@ export const SESSION_COOKIE_NAME = "empleaperu_session";
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
 function getSecretKey(): Uint8Array {
-  const secret = process.env.AUTH_SECRET || "empleaperu-local-dev-secret-change-in-production-2026";
+  const envSecret = process.env.AUTH_SECRET;
+  if (process.env.NODE_ENV === "production") {
+    if (!envSecret || envSecret.length < 32 || envSecret.includes("change-in-production")) {
+      throw new Error("AUTH_SECRET inválido o demasiado corto para producción.");
+    }
+    return new TextEncoder().encode(envSecret);
+  }
+  const secret = envSecret || "empleaperu-local-dev-secret-change-in-production-2026";
   return new TextEncoder().encode(secret);
 }
 

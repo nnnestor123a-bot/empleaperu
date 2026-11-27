@@ -129,6 +129,9 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json();
 
   if (body.action === "toggleUser" && body.userId) {
+    if (body.userId === auth.user.id) {
+      return NextResponse.json({ error: "No puedes suspender tu propia cuenta de administrador." }, { status: 400 });
+    }
     const target = await prisma.user.findUnique({ where: { id: body.userId } });
     if (!target) return NextResponse.json({ error: "Usuario no encontrado." }, { status: 404 });
     const updated = await prisma.user.update({

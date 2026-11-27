@@ -42,10 +42,20 @@ export async function POST(req: NextRequest) {
     ip,
   });
 
+  const allowDevToken =
+    process.env.NODE_ENV !== "production" && process.env.ALLOW_DEV_RESET_TOKEN === "true";
+
+  if (allowDevToken) {
+    return NextResponse.json({
+      message: "Código de recuperación generado en modo desarrollo local (sin servidor SMTP externo).",
+      devResetToken: token,
+      devNotice: "Este token se muestra únicamente porque la plataforma corre en modo desarrollo local.",
+    });
+  }
+
   return NextResponse.json({
-    message: "Código de recuperación generado en modo desarrollo local (sin servidor SMTP externo).",
-    devResetToken: token,
-    devNotice: "Este token se muestra únicamente porque la plataforma corre en modo demostración local.",
+    message:
+      "Si el correo existe en la plataforma, se registró la solicitud de recuperación. En este entorno demostrativo sin SMTP configurado, contacta al administrador para restablecer el acceso.",
   });
 }
 

@@ -5,6 +5,7 @@ import { evaluateJobAntifraud } from "@/lib/antifraud";
 import { analyzeCvText } from "@/lib/cv-analyzer";
 import { evaluateInterviewAnswer, INTERVIEW_QUESTIONS } from "@/lib/interview-bank";
 import { haversineKm } from "@/lib/peru-data";
+import { getStorageBackend } from "@/lib/storage";
 
 describe("Validación local de formato RUC peruano", () => {
   it("acepta RUCs con formato y dígito verificador válidos", () => {
@@ -159,5 +160,22 @@ describe("Simulador de entrevistas y geolocalización", () => {
     const km = haversineKm(-12.0464, -77.0428, -16.409, -71.5375);
     expect(km).toBeGreaterThan(700);
     expect(km).toBeLessThan(900);
+  });
+
+  it("selecciona almacenamiento local o Supabase Storage según variables de entorno", () => {
+    const prevUrl = process.env.SUPABASE_URL;
+    const prevKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    delete process.env.SUPABASE_URL;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    expect(getStorageBackend()).toBe("LOCAL_DISK");
+
+    process.env.SUPABASE_URL = "https://demo.supabase.co";
+    process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-role-key";
+    expect(getStorageBackend()).toBe("SUPABASE_STORAGE");
+
+    if (prevUrl) process.env.SUPABASE_URL = prevUrl;
+    else delete process.env.SUPABASE_URL;
+    if (prevKey) process.env.SUPABASE_SERVICE_ROLE_KEY = prevKey;
+    else delete process.env.SUPABASE_SERVICE_ROLE_KEY;
   });
 });

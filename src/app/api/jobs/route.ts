@@ -33,12 +33,14 @@ export async function GET(req: NextRequest) {
   };
 
   if (q) {
+    const isPg = (process.env.DATABASE_URL || "").startsWith("postgres");
+    const ci = isPg ? { contains: q, mode: "insensitive" as const } : { contains: q };
     where.OR = [
-      { title: { contains: q } },
-      { description: { contains: q } },
-      { company: { tradeName: { contains: q } } },
-      { department: { contains: q } },
-      { district: { contains: q } },
+      { title: ci },
+      { description: ci },
+      { company: { tradeName: ci } },
+      { department: ci },
+      { district: ci },
     ];
   }
   if (department) where.department = department;

@@ -39,3 +39,12 @@
 ## Bloqueos / Notas del Entorno
 - Durante el entorno sandboxed de Windows, `npm install`, descarga del binario de Prisma y `next build` (error transitorio `EPERM` en `mkdir`) se ejecutaron en el host local manteniendo todo el repositorio y servidor confinados a `127.0.0.1:3000`.
 - Validación RUC es estrictamente de formato matemático local (no consulta SUNAT). Pagos y correos de recuperación operan en modo simulación/desarrollo local claramente identificado.
+
+
+### Fase 13 — Preparación y Endurecimiento para Producción Cloud (GitHub + Supabase + Vercel)
+- **Respaldo previo completo:** Creados `backups/backup-2026-11-27T05-49-26-379Z` (SHA-256 verificado) y archivo completo `backups/EmpleaPeru_LOCAL_SQLITE_BACKUP.zip` (471 KB), preservando intacta la versión local.
+- **Arquitectura dual de BD:** `prisma/schema.prisma` configurado para PostgreSQL (Supabase con `DATABASE_URL` + `DIRECT_URL` y `binaryTargets: ["native", "rhel-openssl-3.0.x"]`) y `prisma/schema.sqlite.prisma` preservado para ejecución local en Windows (`INICIAR_PROYECTO.bat`).
+- **Almacenamiento protegido de CVs (`src/lib/storage.ts`):** Adaptador automático para Supabase Storage (bucket privado `resumes` vía `SUPABASE_SERVICE_ROLE_KEY` solo en servidor) con fallback a disco privado local.
+- **Seguridad y auditoría pre-producción:** Actualización de Next.js a `^15.5.29` (parche CVE), `AUTH_SECRET` obligatorio ≥32 caracteres en producción, deshabilitación de `devResetToken` y panel de claves demo en `/login` para producción, HSTS + cabeceras OWASP en `next.config.ts`, prevención de auto-suspensión admin y endpoint `GET /api/health`.
+- **Documentación de despliegue:** Creados `docs/DESPLIEGUE_PRODUCCION.md`, `docs/INFORME_SEGURIDAD_PRODUCCION.md`, `docs/MANUAL_ADMINISTRACION.md`, `docs/MANUAL_ACCESO_DOCENTE.md` y `vercel.json`.
+- **Pendiente de autorización del usuario:** Conexión/autenticación en GitHub (repositorio privado), Supabase (PostgreSQL + Storage) y Vercel para completar la publicación HTTPS y las pruebas E2E en la URL pública.

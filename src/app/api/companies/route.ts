@@ -11,11 +11,13 @@ export async function GET(req: NextRequest) {
 
   const where: Record<string, unknown> = {};
   if (q) {
+    const isPg = (process.env.DATABASE_URL || "").startsWith("postgres");
+    const ci = isPg ? { contains: q, mode: "insensitive" as const } : { contains: q };
     where.OR = [
-      { tradeName: { contains: q } },
-      { legalName: { contains: q } },
-      { sector: { contains: q } },
-      { department: { contains: q } },
+      { tradeName: ci },
+      { legalName: ci },
+      { sector: ci },
+      { department: ci },
     ];
   }
   if (sector) where.sector = sector;

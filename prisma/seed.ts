@@ -29,7 +29,18 @@ async function main() {
     }
   }
 
-  const defaultPassHash = await bcrypt.hash("Emplea2026!", 10);
+  const adminPassHash = await bcrypt.hash(
+    process.env.DEMO_ADMIN_PASSWORD || process.env.DEMO_USER_PASSWORD || "Emplea2026!",
+    10
+  );
+  const companyPassHash = await bcrypt.hash(
+    process.env.DEMO_COMPANY_PASSWORD || process.env.DEMO_USER_PASSWORD || "Emplea2026!",
+    10
+  );
+  const candidatePassHash = await bcrypt.hash(
+    process.env.DEMO_CANDIDATE_PASSWORD || process.env.DEMO_USER_PASSWORD || "Emplea2026!",
+    10
+  );
 
   // 1. Plans
   const plansData = [
@@ -137,7 +148,7 @@ async function main() {
     update: {},
     create: {
       email: "admin@empleaperu.local",
-      passwordHash: defaultPassHash,
+      passwordHash: adminPassHash,
       role: "ADMIN",
       name: "Administrador EmpleaPerú",
       phone: "+51 999 000 100",
@@ -321,7 +332,7 @@ async function main() {
       update: {},
       create: {
         email: ownerEmail,
-        passwordHash: defaultPassHash,
+        passwordHash: companyPassHash,
         role: "COMPANY",
         name: `Reclutador ${spec.tradeName}`,
         phone: `+51 987 100 ${String(100 + i)}`,
@@ -434,7 +445,7 @@ async function main() {
       update: {},
       create: {
         email,
-        passwordHash: defaultPassHash,
+        passwordHash: candidatePassHash,
         role: "CANDIDATE",
         name,
         phone: `+51 945 200 ${String(100 + i)}`,
