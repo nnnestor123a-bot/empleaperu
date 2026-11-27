@@ -33,6 +33,7 @@ export default function LoginPage() {
       setError(data.error || "No se pudo iniciar sesión.");
       return;
     }
+    window.dispatchEvent(new Event("empleaperu-auth"));
     const dest =
       data.user.role === "ADMIN"
         ? "/admin"

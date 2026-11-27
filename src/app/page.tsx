@@ -15,14 +15,14 @@ import {
   Users,
   Wifi,
 } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { getHomePageData } from "@/lib/public-cache";
 import { HomeSearchBar } from "@/components/HomeSearchBar";
 import { formatSalaryRange, MODALITY_LABELS, relativeDateEs } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function HomePage() {
-  const [
+  const {
     activeJobsCount,
     companiesCount,
     candidatesCount,
@@ -32,47 +32,7 @@ export default async function HomePage() {
     latestJobs,
     featuredCompanies,
     deptCounts,
-  ] = await Promise.all([
-    prisma.job.count({ where: { status: "PUBLISHED" } }),
-    prisma.company.count(),
-    prisma.candidateProfile.count(),
-    prisma.application.count(),
-    prisma.jobCategory.findMany({
-      include: { _count: { select: { jobs: { where: { status: "PUBLISHED" } } } } },
-      orderBy: { name: "asc" },
-    }),
-    prisma.job.findMany({
-      where: { status: "PUBLISHED", isFeatured: true },
-      include: {
-        company: { select: { id: true, tradeName: true, verificationStatus: true } },
-        category: { select: { name: true } },
-        skills: { include: { skill: true }, take: 4 },
-      },
-      orderBy: { publishedAt: "desc" },
-      take: 6,
-    }),
-    prisma.job.findMany({
-      where: { status: "PUBLISHED" },
-      include: {
-        company: { select: { id: true, tradeName: true, verificationStatus: true } },
-      },
-      orderBy: { publishedAt: "desc" },
-      take: 6,
-    }),
-    prisma.company.findMany({
-      where: { verificationStatus: "VERIFIED" },
-      include: { _count: { select: { jobs: { where: { status: "PUBLISHED" } } } } },
-      orderBy: [{ isFeatured: "desc" }, { tradeName: "asc" }],
-      take: 6,
-    }),
-    prisma.job.groupBy({
-      by: ["department"],
-      where: { status: "PUBLISHED" },
-      _count: { id: true },
-      orderBy: { _count: { id: "desc" } },
-      take: 8,
-    }),
-  ]);
+  } = await getHomePageData();
 
   const suggestions = Array.from(
     new Set([

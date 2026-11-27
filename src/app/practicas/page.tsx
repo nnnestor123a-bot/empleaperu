@@ -1,15 +1,12 @@
 import { Suspense } from "react";
 import { GraduationCap } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { getCategoriesCached } from "@/lib/public-cache";
 import { JobBoardClient } from "@/components/JobBoardClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function PracticasPage() {
-  const categories = await prisma.jobCategory.findMany({
-    select: { id: true, name: true, slug: true },
-    orderBy: { name: "asc" },
-  });
+  const categories = await getCategoriesCached();
 
   return (
     <div>

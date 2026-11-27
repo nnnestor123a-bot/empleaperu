@@ -56,28 +56,41 @@ export async function GET(req: NextRequest) {
       ...(status ? { status } : {}),
       ...(companyIds ? { job: { companyId: { in: companyIds } } } : {}),
     },
-    include: {
+    select: {
+      id: true,
+      status: true,
+      compatibilityScore: true,
+      internalNotes: true,
+      recruiterRating: true,
+      coverLetter: true,
+      createdAt: true,
       job: {
         select: { id: true, title: true, slug: true, companyId: true, department: true, modality: true },
       },
       candidate: {
-        include: {
+        select: {
+          id: true,
+          headline: true,
+          department: true,
           user: { select: { id: true, name: true, email: true, phone: true } },
-          skills: { include: { skill: true } },
-          experiences: true,
-          educations: true,
-          resumes: { select: { id: true, originalName: true, isPrimary: true, createdAt: true } },
+          skills: { select: { skill: { select: { name: true } } }, take: 8 },
+          resumes: { select: { id: true, originalName: true, isPrimary: true, createdAt: true }, take: 3 },
         },
       },
       resume: { select: { id: true, originalName: true, mimeType: true, sizeBytes: true } },
-      history: { orderBy: { createdAt: "desc" } },
-      interviews: { orderBy: { scheduledAt: "asc" } },
+      interviews: {
+        select: { id: true, scheduledAt: true, modality: true, locationOrLink: true },
+        orderBy: { scheduledAt: "asc" },
+        take: 3,
+      },
       evaluations: {
-        include: { reviewer: { select: { name: true } } },
+        select: { id: true, overallScore: true, comments: true, reviewer: { select: { name: true } } },
         orderBy: { createdAt: "desc" },
+        take: 3,
       },
     },
     orderBy: [{ compatibilityScore: "desc" }, { createdAt: "desc" }],
+    take: 100,
   });
 
   return NextResponse.json({ applications: apps });

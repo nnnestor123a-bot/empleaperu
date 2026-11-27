@@ -187,6 +187,7 @@ model Resume {
   applications Application[]
 
   @@index([candidateId])
+  @@index([candidateId, createdAt])
 }
 
 model ResumeVersion {
@@ -325,6 +326,8 @@ model Job {
   favorites    Favorite[]
 
   @@index([status, publishedAt])
+  @@index([isFeatured, publishedAt])
+  @@index([companyId, status])
   @@index([companyId])
   @@index([categoryId])
   @@index([department])
@@ -371,6 +374,8 @@ model Application {
   @@unique([jobId, candidateId])
   @@index([jobId, status])
   @@index([candidateId, status])
+  @@index([candidateId, updatedAt])
+  @@index([createdAt])
 }
 
 model ApplicationHistory {
@@ -479,6 +484,7 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
+  @@index([userId, createdAt])
 }
 
 model Plan {

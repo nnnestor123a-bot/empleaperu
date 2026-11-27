@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { canAccessCompany, requireRole } from "@/lib/auth";
 import { validatePeruvianRucFormat } from "@/lib/validators";
@@ -114,5 +115,6 @@ export async function PATCH(req: NextRequest) {
     entityId: companyId,
   });
 
+  revalidateTag("companies");
   return NextResponse.json({ company: updated });
 }

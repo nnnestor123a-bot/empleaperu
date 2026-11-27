@@ -24,19 +24,30 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     }),
     prisma.company.findMany({
-      include: {
+      select: {
+        id: true,
+        tradeName: true,
+        ruc: true,
+        sector: true,
+        verificationStatus: true,
         _count: { select: { jobs: true, members: true } },
-        subscriptions: { where: { status: "ACTIVE" }, include: { plan: true }, take: 1 },
       },
       orderBy: { createdAt: "desc" },
+      take: 100,
     }),
     prisma.job.findMany({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        department: true,
+        fraudRiskScore: true,
         company: { select: { tradeName: true } },
         category: { select: { name: true } },
         _count: { select: { applications: true } },
       },
       orderBy: [{ fraudRiskScore: "desc" }, { createdAt: "desc" }],
+      take: 150,
     }),
     prisma.application.findMany({
       select: { id: true, status: true, createdAt: true, compatibilityScore: true },

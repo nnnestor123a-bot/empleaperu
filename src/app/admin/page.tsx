@@ -1,16 +1,22 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import dynamic from "next/dynamic";
 import { AlertTriangle, BadgeCheck, ShieldCheck, Users } from "lucide-react";
+
+const AdminCharts = dynamic(
+  () => import("@/components/AdminCharts").then((m) => m.AdminCharts),
+  {
+    ssr: false,
+    loading: () => (
+      <>
+        <div className="h-72 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800" />
+        <div className="h-72 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800" />
+        <div className="h-72 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800" />
+      </>
+    ),
+  }
+);
 
 interface AdminPayload {
   kpis: {
@@ -138,50 +144,11 @@ export default function AdminPage() {
 
       {tab === "analytics" && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <h2 className="font-bold text-[#12336B] dark:text-white">Vacantes por categoría</h2>
-            <div className="mt-4 h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.charts.jobsByCategory} margin={{ bottom: 28 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-15} textAnchor="end" interval={0} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip />
-                  <Bar dataKey="value" name="Vacantes" fill="#2563EB" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <h2 className="font-bold text-[#12336B] dark:text-white">Distribución geográfica de vacantes</h2>
-            <div className="mt-4 h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.charts.jobsByDepartment}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip />
-                  <Bar dataKey="value" name="Vacantes" fill="#16A34A" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <h2 className="font-bold text-[#12336B] dark:text-white">Postulaciones por etapa ATS</h2>
-            <div className="mt-4 h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.charts.applicationsByStatus}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip />
-                  <Bar dataKey="value" name="Postulaciones" fill="#12336B" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+          <AdminCharts
+            jobsByCategory={data.charts.jobsByCategory}
+            jobsByDepartment={data.charts.jobsByDepartment}
+            applicationsByStatus={data.charts.applicationsByStatus}
+          />
 
           <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3 dark:border-slate-800 dark:bg-slate-900">
             <h2 className="font-bold text-[#12336B] dark:text-white">Categorías laborales ({data.categories.length})</h2>

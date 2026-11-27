@@ -1,12 +1,8 @@
 import { describe, expect, it, afterAll } from "vitest";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { handleEmpleaBotQuery } from "@/lib/empleabot";
 
-const prisma = new PrismaClient({
-  datasources: { db: { url: "file:./dev.db" } },
-});
-
-describe("Integración con Base de Datos SQLite y EmpleaBot local", () => {
+describe("Integración con Base de Datos y EmpleaBot local", () => {
   afterAll(async () => {
     await prisma.$disconnect();
   });

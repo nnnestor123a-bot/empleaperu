@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, requireRole } from "@/lib/auth";
 import { jobInputSchema } from "@/lib/validators";
@@ -148,15 +149,24 @@ export async function GET(req: NextRequest) {
     };
   });
 
-  return NextResponse.json({
-    jobs: enriched,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages: Math.max(1, Math.ceil(total / limit)),
+  return NextResponse.json(
+    {
+      jobs: enriched,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
     },
-  });
+    {
+      headers: {
+        "Cache-Control": user
+          ? "private, no-store"
+          : "public, s-maxage=30, stale-while-revalidate=60",
+      },
+    }
+  );
 }
 
 export async function POST(req: NextRequest) {
@@ -310,6 +320,7 @@ export async function POST(req: NextRequest) {
       metadata: { title: job.title, status: job.status, fraudRiskScore: fraud.riskScore },
     });
 
+    revalidateTag("jobs");
     return NextResponse.json({ job, antifraud: fraud }, { status: 201 });
   } catch (err) {
     console.error("Create job error:", err);

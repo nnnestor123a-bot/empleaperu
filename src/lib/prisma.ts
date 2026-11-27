@@ -10,6 +10,5 @@ export const prisma =
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+// Singleton global también en producción (reutiliza conexiones en lambdas calientes de Vercel)
+globalForPrisma.prisma = prisma;

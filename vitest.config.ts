@@ -5,10 +5,8 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: true,
+    testTimeout: 20000,
     include: ["src/**/*.test.ts", "tests/**/*.test.ts"],
-    env: {
-      DATABASE_URL: "file:./dev.db",
-    },
   },
   resolve: {
     alias: {

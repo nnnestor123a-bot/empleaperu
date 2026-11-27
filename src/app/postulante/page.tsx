@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Briefcase, CheckCircle2, FileText, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { getRecentPublishedJobsCached } from "@/lib/public-cache";
 import {
   calculateCompatibility,
   estimateExperienceYears,
@@ -24,27 +25,29 @@ export default async function PostulanteDashboardPage() {
   const [profile, applications, jobs, favCount] = await Promise.all([
     prisma.candidateProfile.findUnique({
       where: { id: user.candidateProfileId },
-      include: {
-        skills: { include: { skill: true } },
-        experiences: true,
-        educations: true,
-        resumes: true,
+      select: {
+        headline: true,
+        department: true,
+        preferredModality: true,
+        expectedSalaryPen: true,
+        completionPct: true,
+        skills: { select: { skill: { select: { name: true } } } },
+        experiences: { select: { startDate: true, endDate: true, isCurrent: true } },
+        educations: { select: { degree: true } },
+        _count: { select: { resumes: true } },
       },
     }),
     prisma.application.findMany({
       where: { candidateId: user.candidateProfileId },
-      include: { job: { include: { company: { select: { tradeName: true } } } } },
+      select: {
+        id: true,
+        status: true,
+        job: { select: { title: true, company: { select: { tradeName: true } } } },
+      },
       orderBy: { updatedAt: "desc" },
       take: 5,
     }),
-    prisma.job.findMany({
-      where: { status: "PUBLISHED" },
-      include: {
-        company: { select: { tradeName: true } },
-        skills: { include: { skill: true } },
-      },
-      take: 25,
-    }),
+    getRecentPublishedJobsCached(),
     prisma.favorite.count({ where: { userId: user.id } }),
   ]);
 
@@ -109,7 +112,7 @@ export default async function PostulanteDashboardPage() {
         </Link>
         <Link href="/postulante/cv" className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-[#2563EB] dark:border-slate-800 dark:bg-slate-900">
           <FileText className="h-5 w-5 text-[#16A34A]" />
-          <p className="mt-2 text-2xl font-extrabold tabular-nums">{profile?.resumes.length ?? 0}</p>
+          <p className="mt-2 text-2xl font-extrabold tabular-nums">{profile?._count.resumes ?? 0}</p>
           <p className="text-xs text-slate-500">CVs privados cargados</p>
         </Link>
         <Link href="/postulante/favoritos" className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-[#2563EB] dark:border-slate-800 dark:bg-slate-900">

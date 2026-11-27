@@ -1,18 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
-import { deletePrivateResumeFile, readPrivateResumeFile } from "@/lib/storage";
+import {
+  createSignedResumeUrl,
+  deletePrivateResumeFile,
+  readPrivateResumeFile,
+} from "@/lib/storage";
 import { logAudit } from "@/lib/audit";
 
+export const dynamic = "force-dynamic";
+
 /**
- * Descarga segura de CV privado (Supabase Storage en producción / disco privado en local).
+ * Descarga segura de CV privado (Supabase Storage con URL firmada de corta duración / disco local).
  * Solo permite:
  * - El candidato propietario del CV
  * - Una empresa a la que ese candidato haya postulado (aislamiento estricto anti-IDOR)
  * - Un administrador
  */
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   const auth = await requireRole(["CANDIDATE", "COMPANY", "ADMIN"]);
@@ -39,6 +46,7 @@ export async function GET(
         candidateId: resume.candidateId,
         job: { companyId: { in: auth.user.companyIds } },
       },
+      select: { id: true },
     });
     authorized = Boolean(appExists);
   }
@@ -51,6 +59,21 @@ export async function GET(
       entityId: id,
     });
     return NextResponse.json({ error: "Acceso denegado a este CV privado." }, { status: 403 });
+  }
+
+  // Short-lived signed URL (60s) for Supabase Storage when requested
+  if (req.nextUrl.searchParams.get("signed") === "true") {
+    const signedUrl = await createSignedResumeUrl(resume.storedName, 60);
+    if (signedUrl) {
+      return NextResponse.json(
+        { url: signedUrl, expiresInSeconds: 60 },
+        { headers: { "Cache-Control": "no-store, private" } }
+      );
+    }
+    return NextResponse.json(
+      { url: `/api/resumes/${resume.id}`, expiresInSeconds: 0 },
+      { headers: { "Cache-Control": "no-store, private" } }
+    );
   }
 
   try {
@@ -79,7 +102,7 @@ export async function DELETE(
   const { id } = await context.params;
   const resume = await prisma.resume.findUnique({
     where: { id },
-    include: { candidate: { select: { userId: true } } },
+    include: { candidate: { select: { id: true, userId: true } } },
   });
   if (!resume) return NextResponse.json({ error: "No encontrado." }, { status: 404 });
   if (auth.user.role !== "ADMIN" && resume.candidate.userId !== auth.user.id) {
@@ -88,6 +111,8 @@ export async function DELETE(
 
   await prisma.resume.delete({ where: { id } });
   await deletePrivateResumeFile(resume.storedName);
+  revalidatePath("/postulante");
+  revalidatePath("/postulante/cv");
 
   return NextResponse.json({ ok: true });
 }

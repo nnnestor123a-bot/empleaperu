@@ -19,8 +19,8 @@ import {
 import type { SessionUser } from "@/lib/auth";
 
 interface NavbarProps {
-  initialUser: SessionUser | null;
-  initialUnread: number;
+  initialUser?: SessionUser | null;
+  initialUnread?: number;
 }
 
 const PUBLIC_LINKS = [
@@ -33,7 +33,7 @@ const PUBLIC_LINKS = [
   { href: "/servicios", label: "Servicios" },
 ];
 
-export function Navbar({ initialUser, initialUnread }: NavbarProps) {
+export function Navbar({ initialUser = null, initialUnread = 0 }: NavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(initialUser);
@@ -42,9 +42,30 @@ export function Navbar({ initialUser, initialUnread }: NavbarProps) {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    setUser(initialUser);
-    setUnread(initialUnread);
-  }, [initialUser, initialUnread]);
+    let active = true;
+    async function syncSession() {
+      try {
+        const res = await fetch("/api/auth/me", { cache: "no-store" });
+        if (!res.ok || !active) return;
+        const data = await res.json();
+        if (!active) return;
+        setUser(data.user ?? null);
+        setUnread(typeof data.unreadNotifications === "number" ? data.unreadNotifications : 0);
+      } catch {
+        // Silent background session check
+      }
+    }
+
+    syncSession();
+    const onAuthChanged = () => {
+      syncSession();
+    };
+    window.addEventListener("empleaperu-auth", onAuthChanged);
+    return () => {
+      active = false;
+      window.removeEventListener("empleaperu-auth", onAuthChanged);
+    };
+  }, [pathname]);
 
   useEffect(() => {
     const saved = typeof window !== "undefined" ? localStorage.getItem("empleaperu_theme") : null;
@@ -69,7 +90,9 @@ export function Navbar({ initialUser, initialUnread }: NavbarProps) {
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
+    setUnread(0);
     setMenuOpen(false);
+    window.dispatchEvent(new Event("empleaperu-auth"));
     router.push("/");
     router.refresh();
   }

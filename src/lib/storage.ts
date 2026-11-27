@@ -54,6 +54,33 @@ export async function savePrivateResumeFile(
   await fs.writeFile(path.join(dir, safeName), buffer);
 }
 
+export async function createSignedResumeUrl(
+  storedName: string,
+  expiresInSeconds = 60
+): Promise<string | null> {
+  const safeName = path.basename(storedName);
+  const supa = getSupabaseConfig();
+  if (!supa) return null;
+
+  const res = await fetch(`${supa.url}/storage/v1/object/sign/${supa.bucket}/${safeName}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${supa.serviceRoleKey}`,
+      apikey: supa.serviceRoleKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ expiresIn: expiresInSeconds }),
+    cache: "no-store",
+  });
+
+  if (!res.ok) return null;
+  const data = (await res.json()) as { signedURL?: string };
+  if (!data.signedURL) return null;
+  return data.signedURL.startsWith("http")
+    ? data.signedURL
+    : `${supa.url}/storage/v1${data.signedURL.startsWith("/") ? "" : "/"}${data.signedURL}`;
+}
+
 export async function readPrivateResumeFile(storedName: string): Promise<Buffer> {
   const safeName = path.basename(storedName);
   const supa = getSupabaseConfig();

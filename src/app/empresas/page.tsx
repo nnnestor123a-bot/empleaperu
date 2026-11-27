@@ -1,31 +1,11 @@
 import Link from "next/link";
 import { BadgeCheck, Building2, MapPin, Star } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { getCompaniesDirectoryCached } from "@/lib/public-cache";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function EmpresasPage() {
-  const companies = await prisma.company.findMany({
-    include: {
-      _count: {
-        select: {
-          jobs: { where: { status: "PUBLISHED" } },
-          reviews: { where: { status: "APPROVED" } },
-        },
-      },
-      reviews: {
-        where: { status: "APPROVED" },
-        select: {
-          environmentRating: true,
-          growthRating: true,
-          selectionRating: true,
-          communicationRating: true,
-          benefitsRating: true,
-        },
-      },
-    },
-    orderBy: [{ isFeatured: "desc" }, { verificationStatus: "desc" }, { tradeName: "asc" }],
-  });
+  const companies = await getCompaniesDirectoryCached();
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">

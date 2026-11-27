@@ -46,6 +46,7 @@ function RegisterForm() {
       setError(data.error || "No se pudo completar el registro.");
       return;
     }
+    window.dispatchEvent(new Event("empleaperu-auth"));
     router.push(role === "COMPANY" ? "/empresa" : "/postulante");
     router.refresh();
   }

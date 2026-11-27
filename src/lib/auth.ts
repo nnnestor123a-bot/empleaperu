@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
@@ -96,7 +97,7 @@ export interface SessionUser {
   primaryCompanyId?: string;
 }
 
-export async function getCurrentUser(): Promise<SessionUser | null> {
+const fetchCurrentUserUncached = async (): Promise<SessionUser | null> => {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
@@ -107,9 +108,17 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
 
     const session = await prisma.session.findUnique({
       where: { tokenHash: hashToken(token) },
-      include: {
+      select: {
+        expiresAt: true,
         user: {
-          include: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            phone: true,
+            avatarUrl: true,
+            isActive: true,
             candidateProfile: { select: { id: true } },
             companyMemberships: { select: { companyId: true } },
           },
@@ -137,7 +146,10 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   } catch {
     return null;
   }
-}
+};
+
+// Deduplica consultas de sesión dentro de un mismo render en Server Components
+export const getCurrentUser = cache(fetchCurrentUserUncached);
 
 export async function requireRole(
   roles: Array<"CANDIDATE" | "COMPANY" | "ADMIN">

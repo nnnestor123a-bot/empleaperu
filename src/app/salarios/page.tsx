@@ -1,18 +1,23 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import dynamic from "next/dynamic";
 import { BarChart3, Info } from "lucide-react";
 import { PERU_DEPARTMENTS } from "@/lib/peru-data";
 import { EXPERIENCE_LABELS, formatPen } from "@/lib/utils";
+
+const SalaryCharts = dynamic(
+  () => import("@/components/SalaryCharts").then((m) => m.SalaryCharts),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="h-80 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800" />
+        <div className="h-80 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800" />
+      </div>
+    ),
+  }
+);
 
 interface GroupStat {
   name: string;
@@ -120,38 +125,7 @@ export default function SalariosPage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-              <h2 className="font-bold text-[#12336B] dark:text-white">Promedio y mediana por categoría (PEN)</h2>
-              <div className="mt-4 h-72 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.byCategory} margin={{ left: 10, right: 10, bottom: 30 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-15} textAnchor="end" interval={0} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip />
-                    <Bar dataKey="average" name="Promedio (S/)" fill="#2563EB" radius={[6, 6, 0, 0]} />
-                    <Bar dataKey="median" name="Mediana (S/)" fill="#16A34A" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-              <h2 className="font-bold text-[#12336B] dark:text-white">Promedio por departamento (PEN)</h2>
-              <div className="mt-4 h-72 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.byDepartment} margin={{ left: 10, right: 10, bottom: 36 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-25} textAnchor="end" interval={0} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip />
-                    <Bar dataKey="average" name="Promedio (S/)" fill="#12336B" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
+          <SalaryCharts byCategory={data.byCategory} byDepartment={data.byDepartment} />
 
           <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
             <h2 className="font-bold text-[#12336B] dark:text-white">Detalle por nivel de experiencia</h2>
