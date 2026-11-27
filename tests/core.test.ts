@@ -165,17 +165,21 @@ describe("Simulador de entrevistas y geolocalización", () => {
   it("selecciona almacenamiento local o Supabase Storage según variables de entorno", () => {
     const prevUrl = process.env.SUPABASE_URL;
     const prevKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const prevSecret = process.env.SUPABASE_SECRET_KEY;
     delete process.env.SUPABASE_URL;
     delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    delete process.env.SUPABASE_SECRET_KEY;
     expect(getStorageBackend()).toBe("LOCAL_DISK");
 
     process.env.SUPABASE_URL = "https://demo.supabase.co";
-    process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-role-key";
+    process.env.SUPABASE_SECRET_KEY = "sb_secret_test_key";
     expect(getStorageBackend()).toBe("SUPABASE_STORAGE");
 
     if (prevUrl) process.env.SUPABASE_URL = prevUrl;
     else delete process.env.SUPABASE_URL;
     if (prevKey) process.env.SUPABASE_SERVICE_ROLE_KEY = prevKey;
     else delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (prevSecret) process.env.SUPABASE_SECRET_KEY = prevSecret;
+    else delete process.env.SUPABASE_SECRET_KEY;
   });
 });
