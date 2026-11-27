@@ -3,7 +3,7 @@ import path from "path";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
-import { analyzeCvText, extractResumeText } from "@/lib/cv-analyzer";
+import { analyzeCvText, extractResumeText, sanitizeUtf8Text } from "@/lib/cv-analyzer";
 import { savePrivateResumeFile } from "@/lib/storage";
 import { logAudit } from "@/lib/audit";
 
@@ -103,7 +103,8 @@ export async function POST(req: NextRequest) {
   await savePrivateResumeFile(storedName, buffer, mimeType);
 
   const extracted = await extractResumeText(buffer, file.type, file.name);
-  const analysis = analyzeCvText(extracted.text, extracted.readable, extracted.warning);
+  const cleanExtractedText = sanitizeUtf8Text(extracted.text).slice(0, 15000);
+  const analysis = analyzeCvText(cleanExtractedText, extracted.readable, extracted.warning);
 
   await prisma.resume.updateMany({
     where: { candidateId: auth.user.candidateProfileId },
@@ -113,12 +114,12 @@ export async function POST(req: NextRequest) {
   const resume = await prisma.resume.create({
     data: {
       candidateId: auth.user.candidateProfileId,
-      originalName: file.name.slice(0, 160),
+      originalName: sanitizeUtf8Text(file.name).slice(0, 160) || "cv.pdf",
       storedName,
       mimeType,
       sizeBytes: file.size,
-      extractedText: extracted.text.slice(0, 15000),
-      analysisJson: JSON.stringify(analysis),
+      extractedText: cleanExtractedText,
+      analysisJson: sanitizeUtf8Text(JSON.stringify(analysis)),
       isPrimary: true,
     },
   });

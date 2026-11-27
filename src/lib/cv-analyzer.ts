@@ -58,6 +58,14 @@ const KNOWN_SKILLS = [
   "Electricidad Industrial",
 ];
 
+export function sanitizeUtf8Text(input: string): string {
+  return input
+    .replace(/\u0000/g, "")
+    .replace(/[\x01-\x08\x0B\x0C\x0E-\x1F\x7F\uFFFD]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /**
  * Extrae texto de PDF de forma local sin ejecutar contenido incrustado.
  * Si es un PDF escaneado (solo imagen), informa claramente que no es legible.
@@ -76,13 +84,14 @@ function extractTextFromPdfBuffer(buffer: Buffer): string {
       .replace(/\\t/g, " ")
       .replace(/\\\(/g, "(")
       .replace(/\\\)/g, ")")
-      .replace(/\\\\/g, "\\");
+      .replace(/\\\\/g, "\\")
+      .replace(/\u0000/g, "");
     if (/[a-zA-ZáéíóúñÁÉÍÓÚÑ0-9]{2,}/.test(inner)) {
       chunks.push(inner);
     }
   }
 
-  return chunks.join(" ").replace(/\s+/g, " ").trim();
+  return sanitizeUtf8Text(chunks.join(" "));
 }
 
 export async function extractResumeText(

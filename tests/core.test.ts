@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { validatePeruvianRucFormat } from "@/lib/validators";
 import { calculateCompatibility, estimateExperienceYears, inferHighestEducation } from "@/lib/compatibility";
 import { evaluateJobAntifraud } from "@/lib/antifraud";
-import { analyzeCvText } from "@/lib/cv-analyzer";
+import { analyzeCvText, sanitizeUtf8Text } from "@/lib/cv-analyzer";
 import { evaluateInterviewAnswer, INTERVIEW_QUESTIONS } from "@/lib/interview-bank";
 import { haversineKm } from "@/lib/peru-data";
 import { getStorageBackend } from "@/lib/storage";
@@ -142,6 +142,13 @@ describe("Analizador local de CV", () => {
     expect(res.readable).toBe(false);
     expect(res.score).toBe(0);
     expect(res.warning).toContain("escaneado");
+  });
+
+  it("elimina bytes nulos (0x00) para compatibilidad estricta con UTF-8 en PostgreSQL", () => {
+    const dirty = "CV\u0000 Profesional\u0000 en\x07 Perú";
+    const clean = sanitizeUtf8Text(dirty);
+    expect(clean.includes("\u0000")).toBe(false);
+    expect(clean).toBe("CV Profesional en Perú");
   });
 });
 
