@@ -1,30 +1,41 @@
 # EmpleaPerú — Plataforma Peruana de Empleo, ATS y Crecimiento Profesional
 
-Aplicación web full-stack local desarrollada con **Next.js 15, React 19, TypeScript, Tailwind CSS, Prisma y SQLite** (compatible con migración futura a PostgreSQL).
+🌐 **Sitio Público en Producción (HTTPS):** [https://empleaperu.vercel.app](https://empleaperu.vercel.app)  
+📦 **Repositorio GitHub:** [https://github.com/nnnestor123a-bot/empleaperu](https://github.com/nnnestor123a-bot/empleaperu)
 
-## Inicio rápido en Windows
-1. Haz doble clic en **`INICIAR_PROYECTO.bat`** (o ejecuta `npm run dev` tras `npm run setup`).
-2. Abre **`http://localhost:3000`** (`http://127.0.0.1:3000`).
+Aplicación web full-stack de empleo, reclutamiento transparente (ATS Kanban), compatibilidad explicable y desarrollo profesional en el Perú, desplegada en **Vercel + Supabase PostgreSQL + Supabase Storage privado** (planes gratuitos académicos), manteniendo también soporte completo de ejecución local con SQLite.
 
-## Cuentas ficticias de demostración local
-Contraseña común: **`Emplea2026!`**
-- **Postulante:** `postulante@empleaperu.local`
-- **Empresa / Reclutador:** `empresa@empleaperu.local`
-- **Administrador:** `admin@empleaperu.local`
+---
 
-## Módulos implementados
-- **Sitio público comercial:** Inicio con buscador autocompletado, `/empleos` (vista lista + detalle estilo Computrabajo/Bumeran), `/empresas`, `/practicas`, `/salarios`, `/mapa` (offline-safe), `/ferias`, `/servicios`, `/nosotros`, `/contacto`, `/ayuda`, `/privacidad`, `/terminos`, `/portafolio/[slug]`.
-- **Portal Postulante (`/postulante`):** Perfil + completitud + exportación Ley 29733, CV privado fuera de `public/`, Analizador CV ATS (0–100), Generador CV ATS con exportación PDF, Postulaciones con Timeline de Transparencia, Favoritos, Simulador de Entrevistas, Ruta de Carrera, Evaluaciones Técnicas (9 áreas) y Portafolio Público.
-- **Portal Empresa & ATS (`/empresa`):** Validación local de formato RUC, Gestión de vacantes con chequeo antifraude, ATS Kanban con notas/evaluaciones/entrevistas/CV privado/exportación CSV y Planes con simulación local explícita.
-- **Comunicación y Administración:** `/mensajes`, `/notificaciones`, widget flotante **EmpleaBot** (reglas locales) y `/admin` con analítica derivada de BD, verificación manual de empresas, moderación y auditoría.
-- **Operación:** PWA con caché estrictamente pública (`public/sw.js`), scripts de respaldo/restauración con SHA-256 (`npm run backup` / `scripts/restore.mjs`) y documentación completa en `docs/`.
+## Acceso rápido para evaluación docente (sin instalar nada)
 
-## Comandos principales
-```powershell
-npm run dev        # Servidor en http://127.0.0.1:3000
-npm run test       # Pruebas unitarias Vitest
-npm run typecheck  # Verificación estricta TypeScript
-npm run lint       # ESLint
-npm run build      # Compilación de producción
-npm run backup     # Respaldo con manifest SHA-256
-```
+1. Abre directamente **[https://empleaperu.vercel.app](https://empleaperu.vercel.app)** desde cualquier navegador (PC, tablet o móvil) — todas las páginas públicas (`/`, `/empleos`, `/empresas`, `/practicas`, `/salarios`, `/mapa`, `/ferias`, `/servicios`, `/nosotros`, `/contacto`, `/ayuda`) son accesibles sin crear cuenta ni iniciar sesión.
+2. Para probar los portales autenticados en `/login`, utiliza cualquiera de las **cuentas ficticias de demostración**:
+
+| Rol | Correo de prueba | Contraseña de prueba | Panel |
+| :--- | :--- | :--- | :--- |
+| **Postulante** | `postulante@empleaperu.local` | `EmpleaPeru2026!` | `/postulante` |
+| **Empresa / ATS** | `empresa@empleaperu.local` | `EmpleaPeru2026!` | `/empresa` y `/empresa/ats` |
+| **Administrador** | `admin@empleaperu.local` | `EmpleaPeru2026!` | `/admin` |
+
+*(Todos los datos, empresas, vacantes, postulaciones y planes son estrictamente ficticios para demostración académica).*
+
+---
+
+## Módulos principales
+- **Sitio público comercial:** Buscador con autocompletado y estadísticas reales de PostgreSQL (`/`), buscador split-view lista + detalle (`/empleos`), empresas verificadas y reseñas moderadas (`/empresas`), hub de prácticas (`/practicas`), explorador de salarios PEN con gráficos (`/salarios`), mapa interactivo del Perú (`/mapa`) y ferias laborales (`/ferias`).
+- **Portal Postulante (`/postulante`):** Perfil con completitud automática y exportación JSON (referencia Ley 29733), subida de CV privado en **Supabase Storage** con control anti-IDOR, **Analizador CV ATS (0–100)**, **Generador CV ATS con exportación PDF**, Timeline de Transparencia (`/postulante/postulaciones`), Simulador de Entrevistas, Ruta de Carrera, Evaluaciones Técnicas (9 áreas) y Portafolio Público.
+- **Portal Empresa & ATS (`/empresa`):** Validación local de formato RUC, CRUD de vacantes con chequeo antifraude y límites por plan, **ATS Kanban de 7 columnas** con notas, evaluaciones, agenda de entrevistas, descarga de CV privado y exportación CSV, además de planes con simulación explícita.
+- **Comunicación, EmpleaBot y Administración:** Mensajería autorizada (`/mensajes`), notificaciones (`/notificaciones`), asistente flotante **EmpleaBot** basado en reglas locales y panel `/admin` con analítica derivada de BD, verificación manual de empresas, moderación y auditoría sin secretos.
+
+---
+
+## Ejecución local en Windows (versión local SQLite preservada)
+1. Haz doble clic en **`INICIAR_PROYECTO.bat`** (usa `prisma/schema.sqlite.prisma` y `prisma/dev.db`).
+2. Abre `http://localhost:3000`.
+
+## Documentación completa (`docs/`)
+- Despliegue y actualización: [`docs/DESPLIEGUE_PRODUCCION.md`](docs/DESPLIEGUE_PRODUCCION.md)
+- Seguridad pre-producción: [`docs/INFORME_SEGURIDAD_PRODUCCION.md`](docs/INFORME_SEGURIDAD_PRODUCCION.md)
+- Acceso docente y administración: [`docs/MANUAL_ACCESO_DOCENTE.md`](docs/MANUAL_ACCESO_DOCENTE.md), [`docs/MANUAL_ADMINISTRACION.md`](docs/MANUAL_ADMINISTRACION.md)
+- Pruebas verificadas: [`docs/RESULTADOS_PRUEBAS.md`](docs/RESULTADOS_PRUEBAS.md)

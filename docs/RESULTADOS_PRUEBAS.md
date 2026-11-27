@@ -30,3 +30,22 @@ Fecha de ejecución: 2026-11-26 (entorno Windows local, Node `v24.16.0`, npm `11
 - Ajuste de silueta SVG y posición de etiquetas en `/mapa` para evitar superposición de pines.
 - Estado vacío explícito para `Mensajes de contacto (0)` en `/admin`.
 - Ajuste responsive del input de archivo en `/postulante/cv`.
+
+
+## 4. Verificación en Producción Pública HTTPS (`https://empleaperu.vercel.app`)
+
+Fecha: 2026-11-27 · Infraestructura: **Vercel Hobby (región `gru1`) + Supabase PostgreSQL (`aws-0-us-west-2.pooler.supabase.com`) + Supabase Storage (bucket privado `resumes`)**.
+
+| Prueba en Producción Pública | Resultado | Evidencia Verificada |
+| :--- | :--- | :--- |
+| Healthcheck sin sesión (`GET /api/health`) | **PASS** | HTTP 200: `status: "ok"`, `environment: "production"`, `storageBackend: "SUPABASE_STORAGE"`, `jobs: 50`, `companies: 10`, `users: 31` |
+| Base de datos Supabase PostgreSQL (seed) | **PASS** | 35 tablas sincronizadas (`prisma db push`), `31` usuarios, `10` empresas, `50` vacantes, `100` postulaciones, `9` evaluaciones, `3` ferias |
+| Bucket privado Supabase Storage (`resumes`) | **PASS** | Subida privada `200`, lectura privada `200`, acceso público bloqueado (`400`), límite 5 MB solo PDF/DOCX |
+| Acceso público sin Vercel Login (`/` y `/empleos`) | **PASS** | Deployment Protection desactivado; HTTP 200 directo; filtro `React` (2 vacantes) y `Lima` (25 vacantes) funcionando en PostgreSQL |
+| Módulos públicos (`/empresas`, `/practicas`, `/salarios`, `/mapa`, `/ferias`) | **PASS** | HTTP 200 en todas las rutas, gráficos Recharts y mapa SVG del Perú operativos |
+| Hardening `/login` en producción | **PASS** | Sin panel ni botones de autocompletado de claves demo visibles públicamente |
+| Flujo Postulante + EmpleaBot | **PASS** | Login `postulante@empleaperu.local`, perfil `85%`, recomendaciones (`100%`/`92%`/`90%`/`80%`), `/postulante/postulaciones`, `/postulante/cv`, EmpleaBot devolvió 4 empleos remotos desde PostgreSQL |
+| Flujo Empresa + ATS Kanban | **PASS** | Login `empresa@empleaperu.local`, `/empresa` (`8/100` vacantes, `14` postulaciones), `/empresa/ats` Kanban de 7 columnas con 14 candidatos |
+| Flujo Administrador (`/admin`) | **PASS** | Login `admin@empleaperu.local`, KPIs reales, 3 gráficos Recharts y 6 pestañas administrativas operativas |
+| Protección RBAC sin sesión (`/admin`) | **PASS** | Tras cerrar sesión, acceso directo a `/admin` redirigió inmediatamente a `/login` |
+| Errores de consola y red | **PASS** | **0 errores de consola** y **0 respuestas HTTP >= 400** en todo el recorrido de producción |

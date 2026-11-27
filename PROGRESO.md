@@ -48,3 +48,11 @@
 - **Seguridad y auditoría pre-producción:** Actualización de Next.js a `^15.5.29` (parche CVE), `AUTH_SECRET` obligatorio ≥32 caracteres en producción, deshabilitación de `devResetToken` y panel de claves demo en `/login` para producción, HSTS + cabeceras OWASP en `next.config.ts`, prevención de auto-suspensión admin y endpoint `GET /api/health`.
 - **Documentación de despliegue:** Creados `docs/DESPLIEGUE_PRODUCCION.md`, `docs/INFORME_SEGURIDAD_PRODUCCION.md`, `docs/MANUAL_ADMINISTRACION.md`, `docs/MANUAL_ACCESO_DOCENTE.md` y `vercel.json`.
 - **Pendiente de autorización del usuario:** Conexión/autenticación en GitHub (repositorio privado), Supabase (PostgreSQL + Storage) y Vercel para completar la publicación HTTPS y las pruebas E2E en la URL pública.
+
+
+### Fase 14 — Publicación en Producción HTTPS y Verificación E2E Pública (COMPLETADA)
+- **GitHub:** Repositorio público sincronizado en `https://github.com/nnnestor123a-bot/empleaperu` (rama `main`, sin `.env` ni `.db`).
+- **Supabase PostgreSQL:** Esquema de 35 tablas aplicado con `prisma db push` y datos demo sembrados (`31` usuarios, `10` empresas, `50` vacantes, `100` postulaciones, `9` evaluaciones, `3` ferias). Network Restrictions verificado abierto para Vercel.
+- **Supabase Storage:** Bucket privado `resumes` creado y probado (acceso público bloqueado `400`, lectura servidor `200`).
+- **Vercel Producción:** Proyecto `nestor3/empleaperu` desplegado con `vercel --prod` en **`https://empleaperu.vercel.app`**, 10 variables de entorno configuradas en Production/Preview/Development y **Deployment Protection desactivado**.
+- **Verificación E2E en navegador sobre `https://empleaperu.vercel.app`:** **8/8 pruebas aprobadas** (sitio público, filtros PostgreSQL, módulos públicos, hardening `/login`, Postulante + EmpleaBot, Empresa + ATS Kanban, Admin y redirección RBAC sin sesión), **0 errores de consola** y **0 errores HTTP**.
